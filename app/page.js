@@ -60,6 +60,13 @@ export default function TaskOut() {
   const handleDrop = (targetListId) => {
   if (!draggedCard || !draggedFromList) return;
 
+  // Si on drop dans la même liste, ne rien faire
+  if (draggedFromList === targetListId) {
+    setDraggedCard(null);
+    setDraggedFromList(null);
+    return;
+  }
+
   setBoards(prevBoards =>
     prevBoards.map(board => {
       // Si c'est la liste source, on retire la carte
