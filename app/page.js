@@ -1,4 +1,5 @@
-"use client";import React, { useState } from 'react';
+"use client";
+import React, { useState } from 'react';
 import { Plus, X, MoreHorizontal, Star, Users, Menu, User } from 'lucide-react';
 
 export default function TaskOut() {
@@ -37,6 +38,8 @@ export default function TaskOut() {
   const [newListTitle, setNewListTitle] = useState('');
   
   // Modal states
+  const [editCard, setEditCard] = useState(null);
+  const isEditing = !!editCard;
   const [showModal, setShowModal] = useState(false);
   const [modalListId, setModalListId] = useState(null);
   const [newCard, setNewCard] = useState({
@@ -141,34 +144,53 @@ export default function TaskOut() {
     }));
   };
   
-  // Add card from modal
-  const handleAddCardFromModal = () => {
-  if (!newCard.title.trim()) {
-    alert('Le titre est obligatoire !');
-    return;
-  }
+  const handleSaveCard = () => {
+    if (!newCard.title.trim()) {
+      alert('Le titre est obligatoire !');
+      return;
+    }
 
-  const card = {
-    id: `${Date.now()}-${Math.random()}`,
-    title: newCard.title,
-    description: newCard.description,
-    team: newCard.team,
-    assignedUsers: newCard.assignedUsers,
-    document: newCard.document
-  };
+    if (isEditing) {
+      // Modifier la carte existante
+      setBoards(prevBoards =>
+        prevBoards.map(board =>
+          board.id === modalListId
+            ? {
+                ...board,
+                cards: board.cards.map(card =>
+                  card.id === editCard.id
+                    ? { ...card, ...newCard }
+                    : card
+                )
+              }
+            : board
+        )
+      );
+      setEditCard(null);
+    } else {
+      // Ajouter une nouvelle carte
+      const card = {
+        id: `${Date.now()}-${Math.random()}`,
+        title: newCard.title,
+        description: newCard.description,
+        team: newCard.team,
+        assignedUsers: newCard.assignedUsers,
+        document: newCard.document
+      };
 
-  setBoards(prevBoards =>
-    prevBoards.map(board =>
-      board.id === modalListId
-        ? {
-            ...board,
-            cards: [...board.cards, card]
-          }
-        : board
-    )
-  );
+      setBoards(prevBoards =>
+        prevBoards.map(board =>
+          board.id === modalListId
+            ? {
+                ...board,
+                cards: [...board.cards, card]
+              }
+            : board
+        )
+      );
+    }
 
-  closeModal();
+    closeModal();
   };
 
   // Delete card
@@ -252,13 +274,31 @@ export default function TaskOut() {
               <div className="space-y-2 mb-2">
                 {board.cards.map(card => (
                   <div
-                    key={card.id}
-                    draggable
-                    onDragStart={() => handleDragStart(card, board.id)}
-                    className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition cursor-grab active:cursor-grabbing group"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="font-medium text-gray-800 flex-1">{card.title}</p>
+                  key={card.id}
+                  draggable
+                  onDragStart={() => handleDragStart(card, board.id)}
+                  className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition cursor-grab active:cursor-grabbing group"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="font-medium text-gray-800 flex-1">{card.title}</p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          setModalListId(board.id);
+                          setShowModal(true);
+                          setEditCard(card);
+                          setNewCard({
+                            title: card.title,
+                            description: card.description,
+                            team: card.team,
+                            assignedUsers: card.assignedUsers,
+                            document: card.document || null
+                          });
+                        }}
+                        className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 transition text-xs"
+                      >
+                        Modifier
+                      </button>
                       <button
                         onClick={() => handleDeleteCard(board.id, card.id)}
                         className="opacity-0 group-hover:opacity-100 transition p-1 hover:bg-gray-100 rounded"
@@ -266,6 +306,7 @@ export default function TaskOut() {
                         <X className="w-4 h-4 text-gray-500" />
                       </button>
                     </div>
+                  </div>
                     
                     {card.description && (
                       <p className="text-sm text-gray-600 mb-2">{card.description}</p>
@@ -349,20 +390,29 @@ export default function TaskOut() {
           </div>
         </div>
       </div>
-
+      
       {/* Modal for Adding Card */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b">
-              <h3 className="text-xl font-bold text-gray-800">Créer une nouvelle tâche</h3>
+              <h3 className="text-xl font-bold text-gray-800">{isEditing ? "Modifier la tâche" : "Créer une nouvelle tâche"}
+              </h3>
               <button
                 onClick={closeModal}
                 className="p-1 hover:bg-gray-100 rounded transition"
               >
                 <X className="w-6 h-6 text-gray-600" />
               </button>
+              <button
+                onClick={handleSaveCard}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+              >
+                {isEditing ? "Enregistrer" : "Créer la tâche"}
+              </button>
+              {/* Modifier List Button */}
+                 
             </div>
 
             {/* Modal Body */}
@@ -502,10 +552,10 @@ export default function TaskOut() {
                 Annuler
               </button>
               <button
-                onClick={handleAddCardFromModal}
+                onClick={handleSaveCard}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
               >
-                Créer la tâche
+                {isEditing ? "Enregistrer" : "Créer la tâche"}
               </button>
             </div>
           </div>
