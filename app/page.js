@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Plus, X, MoreHorizontal, Star, Users, Menu, User } from 'lucide-react';
+import { Plus, X, MoreHorizontal, Star, Users, Menu, User, Archive } from 'lucide-react';
 
 export default function TaskOut() {
   const [boards, setBoards] = useState([
@@ -8,22 +8,22 @@ export default function TaskOut() {
       id: 1,
       title: 'À faire',
       cards: [
-        { id: 1, title: 'Créer la maquette du site', description: 'Design sur Figma', team: 'Design', assignedUsers: ['Salim', 'Youssef'] },
-        { id: 2, title: 'Configurer le projet', description: 'Next.js + Tailwind', team: 'Développement', assignedUsers: ['Mehdi'] },
+        { id: 1, title: 'Créer la maquette du site', description: 'Design sur Figma', team: 'Design', assignedUsers: ['Salim', 'Youssef'], archived: false },
+        { id: 2, title: 'Configurer le projet', description: 'Next.js + Tailwind', team: 'Développement', assignedUsers: ['Mehdi'], archived: false },
       ]
     },
     {
       id: 2,
       title: 'En cours',
       cards: [
-        { id: 3, title: 'Développer les composants', description: 'React components', team: 'Développement', assignedUsers: ['Salim'] },
+        { id: 3, title: 'Développer les composants', description: 'React components', team: 'Développement', assignedUsers: ['Salim'], archived: false },
       ]
     },
     {
       id: 3,
       title: 'Terminé',
       cards: [
-        { id: 4, title: 'Installer les dépendances', description: 'npm install', team: 'Développement', assignedUsers: ['Youssef', 'Mehdi'] },
+        { id: 4, title: 'Installer les dépendances', description: 'npm install', team: 'Développement', assignedUsers: ['Youssef', 'Mehdi'], archived: false },
       ]
     },
   ]);
@@ -175,7 +175,8 @@ export default function TaskOut() {
         description: newCard.description,
         team: newCard.team,
         assignedUsers: newCard.assignedUsers,
-        document: newCard.document
+        document: newCard.document,
+        archived: false
       };
 
       setBoards(prevBoards =>
@@ -272,7 +273,7 @@ export default function TaskOut() {
 
               {/* Cards */}
               <div className="space-y-2 mb-2">
-                {board.cards.map(card => (
+                {board.cards.filter(card => !card.archived).map(card => (
                   <div
                   key={card.id}
                   draggable
@@ -300,10 +301,24 @@ export default function TaskOut() {
                         Modifier
                       </button>
                       <button
-                        onClick={() => handleDeleteCard(board.id, card.id)}
+                        onClick={() => {
+                          setBoards(prevBoards =>
+                            prevBoards.map(board =>
+                              board.id === board.id
+                                ? {
+                                    ...board,
+                                    cards: board.cards.map(c =>
+                                      c.id === card.id ? { ...c, archived: true } : c
+                                    )
+                                  }
+                                : board
+                            )
+                          );
+                        }}
                         className="opacity-0 group-hover:opacity-100 transition p-1 hover:bg-gray-100 rounded"
                       >
-                        <X className="w-4 h-4 text-gray-500" />
+                        <Archive className="w-4 h-4 text-gray-500" />
+                        <span className="sr-only">Archiver</span>
                       </button>
                     </div>
                   </div>
