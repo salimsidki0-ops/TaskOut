@@ -180,10 +180,20 @@ export default function TaskOut() {
       return;
     }
     if (!newCard.deadline) {
-    alert('La deadline est obligatoire !');
-    return;
-  }
+      alert('La deadline est obligatoire !');
+      return;
+    }
 
+    // Vérification deadline >= date de création
+    const creationDate = isEditing && editCard.createdAt
+      ? new Date(editCard.createdAt)
+      : new Date();
+    const deadlineDate = new Date(newCard.deadline);
+
+    if (deadlineDate < creationDate) {
+      alert("La deadline ne peut pas être antérieure à la date de création !");
+      return;
+    }
 
     if (isEditing) {
       // Modifier la carte existante
@@ -212,7 +222,7 @@ export default function TaskOut() {
         assignedUsers: newCard.assignedUsers,
         document: newCard.document,
         archived: false,
-        createdAt: new Date().toISOString(), // Date de création automatique
+        createdAt: creationDate.toISOString(),
         deadline: newCard.deadline
       };
 
