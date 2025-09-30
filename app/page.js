@@ -8,22 +8,22 @@ export default function TaskOut() {
       id: 1,
       title: 'À faire',
       cards: [
-        { id: 1, title: 'Créer la maquette du site', description: 'Design sur Figma', team: 'Design', assignedUsers: ['Salim', 'Youssef'], archived: false },
-        { id: 2, title: 'Configurer le projet', description: 'Next.js + Tailwind', team: 'Développement', assignedUsers: ['Mehdi'], archived: false },
+        { id: 1, title: 'Créer la maquette du site', description: 'Design sur Figma', team: 'Design', assignedUsers: ['Salim', 'Youssef'], archived: false, deadline: '2025-10-10' },
+        { id: 2, title: 'Configurer le projet', description: 'Next.js + Tailwind', team: 'Développement', assignedUsers: ['Mehdi'], archived: false, deadline: '2025-10-10' },
       ]
     },
     {
       id: 2,
       title: 'En cours',
       cards: [
-        { id: 3, title: 'Développer les composants', description: 'React components', team: 'Développement', assignedUsers: ['Salim'], archived: false },
+        { id: 3, title: 'Développer les composants', description: 'React components', team: 'Développement', assignedUsers: ['Salim'], archived: false, deadline: '2025-10-10' },
       ]
     },
     {
       id: 3,
       title: 'Terminé',
       cards: [
-        { id: 4, title: 'Installer les dépendances', description: 'npm install', team: 'Développement', assignedUsers: ['Youssef', 'Mehdi'], archived: false },
+        { id: 4, title: 'Installer les dépendances', description: 'npm install', team: 'Développement', assignedUsers: ['Youssef', 'Mehdi'], archived: false, deadline: '2025-10-10' },
       ]
     },
   ]);
@@ -47,7 +47,8 @@ export default function TaskOut() {
     description: '',
     team: '',
     assignedUsers: [],
-    document: null
+    document: null,
+    deadline: ''
   });
 
   // Drag and Drop handlers
@@ -118,7 +119,9 @@ export default function TaskOut() {
       title: '',
       description: '',
       team: '',
-      assignedUsers: []
+      assignedUsers: [],
+      document: null,
+      deadline: ''
     });
   };
 
@@ -130,7 +133,9 @@ export default function TaskOut() {
       title: '',
       description: '',
       team: '',
-      assignedUsers: []
+      assignedUsers: [],
+      document: null,
+      deadline: ''
     });
   };
 
@@ -149,6 +154,11 @@ export default function TaskOut() {
       alert('Le titre est obligatoire !');
       return;
     }
+    if (!newCard.deadline) {
+    alert('La deadline est obligatoire !');
+    return;
+  }
+
 
     if (isEditing) {
       // Modifier la carte existante
@@ -176,7 +186,9 @@ export default function TaskOut() {
         team: newCard.team,
         assignedUsers: newCard.assignedUsers,
         document: newCard.document,
-        archived: false
+        archived: false,
+        createdAt: new Date().toISOString(), // Date de création automatique
+        deadline: newCard.deadline
       };
 
       setBoards(prevBoards =>
@@ -325,6 +337,11 @@ export default function TaskOut() {
                     
                     {card.description && (
                       <p className="text-sm text-gray-600 mb-2">{card.description}</p>
+                    )}
+                    {card.deadline && (
+                      <p className="text-xs text-red-600 font-semibold mb-1">
+                        Deadline : {new Date(card.deadline).toLocaleDateString()}
+                      </p>
                     )}
                     
                     {card.team && (
@@ -554,6 +571,19 @@ export default function TaskOut() {
                     if (file) setNewCard(prev => ({ ...prev, document: file }));
                   }}
                   ref={input => { if (input && !input.onclick) input.onclick = () => input.click(); }}
+                />
+              </div>
+              {/* Deadline */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Deadline <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={newCard.deadline}
+                  onChange={e => setNewCard({ ...newCard, deadline: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
             </div>
