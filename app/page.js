@@ -8,25 +8,26 @@ export default function TaskOut() {
       id: 1,
       title: 'À faire',
       cards: [
-        { id: 1, title: 'Créer la maquette du site', description: 'Design sur Figma', team: 'Design', assignedUsers: ['Salim', 'Youssef'], archived: false, deadline: '2025-10-10' },
-        { id: 2, title: 'Configurer le projet', description: 'Next.js + Tailwind', team: 'Développement', assignedUsers: ['Mehdi'], archived: false, deadline: '2025-10-10' },
+        { id: 1, title: 'Créer la maquette du site', description: 'Design sur Figma', team: 'Design', assignedUsers: ['Salim', 'Youssef'], archived: false,createdAt: '2025-07-30T09:00:00.000Z', deadline: '2025-10-10' },
+        { id: 2, title: 'Configurer le projet', description: 'Next.js + Tailwind', team: 'Développement', assignedUsers: ['Mehdi'], archived: false,createdAt: '2025-09-30T09:00:00.000Z', deadline: '2025-10-10' },
       ]
     },
     {
       id: 2,
       title: 'En cours',
       cards: [
-        { id: 3, title: 'Développer les composants', description: 'React components', team: 'Développement', assignedUsers: ['Salim'], archived: false, deadline: '2025-10-10' },
+        { id: 3, title: 'Développer les composants', description: 'React components', team: 'Développement', assignedUsers: ['Salim'], archived: false,createdAt: '2025-08-30T09:00:00.000Z', deadline: '2025-10-10' },
       ]
     },
     {
       id: 3,
       title: 'Terminé',
       cards: [
-        { id: 4, title: 'Installer les dépendances', description: 'npm install', team: 'Développement', assignedUsers: ['Youssef', 'Mehdi'], archived: false, deadline: '2025-10-10' },
+        { id: 4, title: 'Installer les dépendances', description: 'npm install', team: 'Développement', assignedUsers: ['Youssef', 'Mehdi'], archived: false,createdAt: '2025-09-20T09:00:00.000Z', deadline: '2025-10-10' },
       ]
     },
   ]);
+
 
   // Available teams and users
   const teams = ['Design', 'Développement', 'Marketing', 'Support'];
@@ -50,6 +51,30 @@ export default function TaskOut() {
     document: null,
     deadline: ''
   });
+
+  function getProgress(card) {
+    if (!card.createdAt || !card.deadline) return 0;
+    const created = new Date(card.createdAt);
+    const deadline = new Date(card.deadline);
+    const now = new Date();
+
+    const total = deadline - created;
+    const elapsed = now - created;
+    if (total <= 0) return 100;
+    let percent = Math.round((elapsed / total) * 100);
+    if (percent < 0) percent = 0;
+    if (percent > 100) percent = 100;
+    return percent;
+  }
+
+  function getProgressColor(percent) {
+  // Bleu: rgb(59, 130, 246) (#3b82f6)
+  // Rouge: rgb(239, 68, 68) (#ef4444)
+  const r = Math.round(59 + (239 - 59) * (percent / 100));
+  const g = Math.round(130 + (68 - 130) * (percent / 100));
+  const b = Math.round(246 + (68 - 246) * (percent / 100));
+  return `rgb(${r},${g},${b})`;
+}
 
   // Drag and Drop handlers
   const handleDragStart = (card, listId) => {
@@ -343,6 +368,17 @@ export default function TaskOut() {
                         Deadline : {new Date(card.deadline).toLocaleDateString()}
                       </p>
                     )}
+                    <div className="w-full bg-gray-200 rounded h-3 mb-2">
+                      <div
+                        className="h-3 rounded transition-all"
+                        style={{
+                          width: `${getProgress(card)}%`,
+                          background: getProgressColor(getProgress(card))
+                        }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-1">
+                    </p>
                     
                     {card.team && (
                       <div className="flex items-center gap-1 mb-2">
